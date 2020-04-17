@@ -1,60 +1,59 @@
 import React from "react";
-// import * as BooksAPI from './BooksAPI'
+import * as BooksAPI from './BooksAPI'
 import "./App.css";
-import * as Api from "./api";
 
+
+//Returning the Want TO Read View
 function WantToReadPage(props) {
   let { books } = props;
-
   return (
     <>
-      
-        {books.map((book) => (
-      <div className="list-book-description" key={book.id}>
+      {books.map((book) => (
+        <div className="list-book-description" key={book.id}>
           {console.log(book.id)}
-            <div className="book" >
-              <div className="book-top">
-                <div
-                  className="book-cover"
-                  style={{
-                    width: "100%",
-                    height: 193,
-                    backgroundRepeat: "non-repeat",
-                    backgroundSize: "100% 100%",
+          <div className="book">
+            <div className="book-top">
+              <div
+                className="book-cover"
+                style={{
+                  width: "100%",
+                  height: 193,
+                  backgroundRepeat: "non-repeat",
+                  backgroundSize: "100% 100%",
 
-                    backgroundImage:
-                      `url("${book.imageLinks.smallThumbnail}")`,
-                  }}
-                />
-                <div className="book-shelf-changer">
-                  <select>
-                    <option value="move" disabled>
-                      Move to...
-                    </option>
-                    <option value="currentlyReading">Currently Reading</option>
-                    <option value="wantToRead">Want to Read</option>
-                    <option value="read">Read</option>
-                    <option value="none">None</option>
-                  </select>
-                </div>
+                  backgroundImage: `url("${book.imageLinks.smallThumbnail}")`,
+                }}
+              />
+              <div className="book-shelf-changer">
+                <select>
+                  <option value="move" disabled>
+                    Move to...
+                  </option>
+                  <option value="currentlyReading">Currently Reading</option>
+                  <option value="wantToRead">Want to Read</option>
+                  <option value="read">Read</option>
+                  <option value="none">None</option>
+                </select>
               </div>
             </div>
+          </div>
+          <div>
+            <div className="book-title">Year: {book.publishedDate}</div>
+            <div className="book-authors">Author: {book.authors}</div>
+            <div className="text-box">
+              <p>{book.description}</p>
 
-            <div>
-              <div className="book-title">1776</div>
-              <div className="book-authors">David McCullough</div>
-              <div style={{fontSize:"12pt"}}>
-                <p style={{backgroundImage:'linear-gradient(to bottom, transparent, black);'}}>
-                { book.description}
+              {book.description.length < 550 ? (
+                <></>
+              ) : (
+                <p className="read-more">
+                  <a href="/">See More</a>
                 </p>
-                <p>
-                  <a href='/'>Read More</a> 
-                </p>
-              </div>
+              )}
             </div>
-            </div>
-        ))}
-    
+          </div>
+        </div>
+      ))}
     </>
   );
 }
@@ -90,7 +89,7 @@ class BooksApp extends React.Component {
   }
 
   componentDidMount() {
-    Api.getBooks().then((books) => {
+    BooksAPI.getAll().then((books) => {
       this.setState({
         books: books,
       });
@@ -127,6 +126,10 @@ class BooksApp extends React.Component {
           </div>
         ) : (
           <>
+          
+          <div className="list-books-title">
+              <h1>MyReads</h1>
+            </div>
             <div className="page-container">
               <div className="page-side-nav">
                 <ol>
