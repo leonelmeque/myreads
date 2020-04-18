@@ -2,7 +2,7 @@ import React from "react";
 import * as BooksAPI from "./BooksAPI";
 import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
-
+import PropTypes from "prop-types";
 //Want To Read View Component
 class WantToReadPage extends React.Component {
   render() {
@@ -140,7 +140,7 @@ class Read extends React.Component {
           display: "flex",
           flexDirection: "row",
           flexWrap: "wrap",
-          placeContent: "end"
+          placeContent: "end",
         }}
       >
         {books.map((book) => {
@@ -148,8 +148,15 @@ class Read extends React.Component {
             return null;
           } else {
             return (
-              <div key={book.id} style={{ alignSelf: "flex-end", flexBasis:"content", margin:"0px 20px" }}>
-                <h3 style={{width: 240}}>{book.title}</h3>
+              <div
+                key={book.id}
+                style={{
+                  alignSelf: "flex-end",
+                  flexBasis: "content",
+                  margin: "0px 20px",
+                }}
+              >
+                <h3 style={{ width: 240 }}>{book.title}</h3>
                 <div className="book">
                   <div className="book-top">
                     <div
@@ -196,43 +203,61 @@ class Read extends React.Component {
 // Search View Component
 
 function SearchResults(props) {
-  let { book, changeShelf } = props;
+  let { books, addNewBook } = props;
 
-  return (
-    <>
-      <div className="book">
-        <h3>{book.title}</h3>
-        <div className="book-top">
-          <div
-            className="book-cover"
-            style={{
-              width: "100%",
-              height: 293,
-              backgroundRepeat: "non-repeat",
-              backgroundSize: "100% 100%",
+  if (books === undefined || books.hasOwnProperty("length") === false) {
+    return null;
+  } else {
+    return (
+      <>
+        {books.map((book) => {
+          if (book.hasOwnProperty("imageLinks")) {
+            return (
+              <div key={book.id}>
+                <div className="book">
+                  <h3>{book.title}</h3>
+                  <div className="book-top">
+                    <div
+                      className="book-cover"
+                      style={{
+                        width: "100%",
+                        height: 293,
+                        backgroundRepeat: "non-repeat",
+                        backgroundSize: "100% 100%",
 
-              backgroundImage: `url("${book.imageLinks.smallThumbnail}")`,
-            }}
-          />
-          <div className="book-shelf-changer">
-            <select
-              onChange={(e) => {
-                changeShelf(book.id, e.target.value);
-              }}
-            >
-              <option value="move" defaultValue>
-                Move to...
-              </option>
-              <option value="currentlyReading">Currently Reading</option>
-              <option value="wantToRead">Want to Read</option>
-              <option value="read">Read</option>
-              <option value="none">None</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+                        backgroundImage: `url("${
+                          book.imageLinks.smallThumbnail
+                        }")`,
+                      }}
+                    />
+                    <div className="book-shelf-changer">
+                      <select
+                        onChange={(e) => {
+                          addNewBook(book, e.target.value);
+                        }}
+                      >
+                        <option value="move" defaultValue>
+                          Move to...
+                        </option>
+                        <option value="currentlyReading">
+                          Currently Reading
+                        </option>
+                        <option value="wantToRead">Want to Read</option>
+                        <option value="read">Read</option>
+                        <option value="none">None</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          } else {
+            return null;
+          }
+        })}
+      </>
+    );
+  }
 }
 
 class BooksApp extends React.Component {
@@ -241,6 +266,7 @@ class BooksApp extends React.Component {
     this.state = {
       showSearchPage: false,
       books: [],
+      exploreBooks: [],
       activePage: 1,
       query: "",
     };
@@ -254,10 +280,6 @@ class BooksApp extends React.Component {
     });
   }
 
-  updateOnApi = (book, shelf) => {
-    BooksAPI.update(book.shelf);
-  };
-
   updateActivePage = (page, event) => {
     event.stopPropagation();
     this.setState((current) => ({
@@ -266,10 +288,21 @@ class BooksApp extends React.Component {
   };
 
   queryBooks = (query) => {
-    console.log(query);
-    this.setState(() => ({
-      query: query.concat(),
-    }));
+    BooksAPI.search(query).then((books) => {
+      this.setState((state) => ({
+        exploreBooks: books,
+      }));
+    });
+
+    this.setState({
+      query: query.trim(),
+    });
+
+    // if (this.state.exploreBooks !== undefined) {
+    //   console.log(this.state.exploreBooks);
+    // } else {
+    //   console.log("no value");
+    // }
   };
 
   cleanQuery = () => {
@@ -283,7 +316,7 @@ class BooksApp extends React.Component {
         books: state.books.map((book) => {
           if (book.id === id) {
             book.shelf = newShelf;
-            BooksAPI.update(book, newShelf);
+            BooksAPI.update(id, newShelf);
             return book;
           }
           return book;
@@ -291,8 +324,21 @@ class BooksApp extends React.Component {
       }));
   };
 
+  addNewBook = (newBook, newShelf) => {
+    newBook.shelf = newShelf;
+    if (this.state.books.find((book) => book.id === newBook.id) !== -1 && newShelf!=='none') {
+      this.setState((state) => ({
+        books: state.books.concat(newBook),
+      }));
+      BooksAPI.update(newBook.id, newShelf);
+    }
+
+    console.log(this.state.books);
+  };
+
   render() {
     let { query } = this.state;
+
     return (
       <Router>
         <div className="app">
@@ -325,31 +371,13 @@ class BooksApp extends React.Component {
                 </div>
               </div>
               <div className="search-books-results">
-                {query === ""
-                  ? this.state.books.map((book) => {
-                      return (
-                        <SearchResults
-                          style={{margin:"0px 20px 20px 0px"}}
-                          key={book.id}
-                          book={book}
-                          changeShelf={this.changeShelf}
-                        />
-                      );
-                    })
-                  : this.state.books.map((book) => {
-                      if (
-                        book.title.toLowerCase().includes(query.toLowerCase())
-                      ) {
-                        return (
-                          <SearchResults
-                            key={book.id}
-                            book={book}
-                            changeShelf={this.changeShelf}
-                          />
-                        );
-                      }
-                      return null;
-                    })}
+                {query !== "" && (
+                  <SearchResults
+                    style={{ margin: "0px 20px 20px 0px" }}
+                    books={this.state.exploreBooks}
+                    addNewBook={this.addNewBook}
+                  />
+                )}
                 <ol className="books-grid" />
               </div>
             </div>
@@ -448,5 +476,9 @@ class BooksApp extends React.Component {
     );
   }
 }
+
+BooksApp.propTyoes = {
+  exploreBooks: PropTypes.array,
+};
 
 export default BooksApp;

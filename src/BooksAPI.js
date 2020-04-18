@@ -9,7 +9,7 @@ if (!token)
 
 const headers = {
   'Accept': 'application/json',
-  'Authorization': token
+  'Authorization': 'ewefefefwfef'
 }
 
 export const get = (bookId) =>
@@ -22,8 +22,9 @@ export const getAll = () =>
     .then(res => res.json())
     .then(data => data.books)
 
-export const update = (book, shelf) =>
-  fetch(`${api}/books/${book.id}`, {
+//Changed the updated method to receive only the book id
+export const update = (id, shelf) =>
+  fetch(`${api}/books/${id}`, {
     method: 'PUT',
     headers: {
       ...headers,
