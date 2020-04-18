@@ -3,73 +3,82 @@ import * as BooksAPI from "./BooksAPI";
 import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
+
 //Want To Read View Component
 class WantToReadPage extends React.Component {
   render() {
     const { books, changeShelf } = this.props; // Passing Props
     return (
       <>
-        {books.map((book) => {
-          if (book.shelf !== "wantToRead") {
-            return null;
-          } else {
-            return (
-              <div className="list-book-description" key={book.id}>
-                <div className="book">
-                  <div className="book-top">
-                    <div
-                      className="book-cover"
-                      style={{
-                        width: "100%",
-                        height: 293,
-                        backgroundRepeat: "non-repeat",
-                        backgroundSize: "100% 100%",
+        <>
+          {books.map((book) => {
+            if (book.shelf !== "wantToRead") {
+              return null;
+            } else {
+              return (
+                <div className="list-book-description" key={book.id}>
+                  <div className="book">
+                    <div className="book-top">
+                      <div
+                        className="book-cover"
+                        style={{
+                          width: "100%",
+                          height: 293,
+                          backgroundRepeat: "non-repeat",
+                          backgroundSize: "100% 100%",
 
-                        backgroundImage: `url("${
-                          book.imageLinks.smallThumbnail
-                        }")`,
-                      }}
-                    />
-                    <div className="book-shelf-changer">
-                      <select
-                        onChange={(e) => {
-                          changeShelf(book.id, e.target.value);
+                          backgroundImage: `url("${
+                            book.imageLinks.smallThumbnail
+                          }")`,
                         }}
-                      >
-                        <option value="move" defaultValue>
-                          Move to...
-                        </option>
-                        <option value="currentlyReading">
-                          Currently Reading
-                        </option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
+                      />
+                      <div className="book-shelf-changer">
+                        <select
+                          onChange={(e) => {
+                            changeShelf(book.id, e.target.value);
+                          }}
+                        >
+                          <option value="move" defaultValue>
+                            Move to...
+                          </option>
+                          <option value="currentlyReading">
+                            Currently Reading
+                          </option>
+                          <option value="wantToRead">Want to Read</option>
+                          <option value="read">Read</option>
+                          <option value="none">None</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3>{book.title}</h3>
+                    <div className="book-title">Year: {book.publishedDate}</div>
+
+                    <div className="book-authors">Author: {book.authors}</div>
+                    <div className="text-box">
+                      <p>{book.description}</p>
+
+                      {book.hasOwnProperty("description") &&
+                      book.description.length < 550 ? (
+                        <></>
+                      ) : (
+                        <>
+                          <h4>No Description :-(</h4>
+                          <p className="read-more">
+                            {book.hasOwnProperty("description") && (
+                              <a href="/">See More</a>
+                            )}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div>
-                  <h3>{book.title}</h3>
-                  <div className="book-title">Year: {book.publishedDate}</div>
-
-                  <div className="book-authors">Author: {book.authors}</div>
-                  <div className="text-box">
-                    <p>{book.description}</p>
-
-                    {book.description.length < 550 ? (
-                      <></>
-                    ) : (
-                      <p className="read-more">
-                        <a href="/">See More</a>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-        })}
+              );
+            }
+          })}
+        </>
       </>
     );
   }
@@ -153,7 +162,7 @@ class Read extends React.Component {
                 style={{
                   alignSelf: "flex-end",
                   flexBasis: "content",
-                  margin: "0px 20px",
+                  margin: "0px 50px",
                 }}
               >
                 <h3 style={{ width: 240 }}>{book.title}</h3>
@@ -211,49 +220,47 @@ function SearchResults(props) {
     return (
       <>
         {books.map((book) => {
-          if (book.hasOwnProperty("imageLinks")) {
-            return (
-              <div key={book.id}>
-                <div className="book">
-                  <h3>{book.title}</h3>
-                  <div className="book-top">
-                    <div
-                      className="book-cover"
-                      style={{
-                        width: "100%",
-                        height: 293,
-                        backgroundRepeat: "non-repeat",
-                        backgroundSize: "100% 100%",
+          return (
+            <div key={book.id}>
+              <div className="book">
+                <h3>{book.title}</h3>
+                <div className="book-top">
+                  <div
+                    className="book-cover"
+                    style={{
+                      width: "100%",
+                      height: 293,
+                      backgroundRepeat: "non-repeat",
+                      backgroundSize: "100% 100%",
 
-                        backgroundImage: `url("${
-                          book.imageLinks.smallThumbnail
-                        }")`,
+                      backgroundImage: `url("${
+                        book.hasOwnProperty("imageLinks")
+                          ? book.imageLinks.smallThumbnail
+                          : ""
+                      }")`,
+                    }}
+                  />
+                  <div className="book-shelf-changer">
+                    <select
+                      onChange={(e) => {
+                        addNewBook(book, e.target.value);
                       }}
-                    />
-                    <div className="book-shelf-changer">
-                      <select
-                        onChange={(e) => {
-                          addNewBook(book, e.target.value);
-                        }}
-                      >
-                        <option value="move" defaultValue>
-                          Move to...
-                        </option>
-                        <option value="currentlyReading">
-                          Currently Reading
-                        </option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
+                    >
+                      <option value="move" defaultValue>
+                        Move to...
+                      </option>
+                      <option value="currentlyReading">
+                        Currently Reading
+                      </option>
+                      <option value="wantToRead">Want to Read</option>
+                      <option value="read">Read</option>
+                      <option value="none">None</option>
+                    </select>
                   </div>
                 </div>
               </div>
-            );
-          } else {
-            return null;
-          }
+            </div>
+          );
         })}
       </>
     );
@@ -287,7 +294,7 @@ class BooksApp extends React.Component {
     }));
   };
 
-  queryBooks = (query) => {
+  queryExploreBooks = (query) => {
     BooksAPI.search(query).then((books) => {
       this.setState((state) => ({
         exploreBooks: books,
@@ -297,16 +304,16 @@ class BooksApp extends React.Component {
     this.setState({
       query: query.trim(),
     });
+  };
 
-    // if (this.state.exploreBooks !== undefined) {
-    //   console.log(this.state.exploreBooks);
-    // } else {
-    //   console.log("no value");
-    // }
+  queryShelfBooks = (query) => {
+    this.setState((state) => ({
+      query: query.trim(),
+    }));
   };
 
   cleanQuery = () => {
-    this.queryBooks("");
+    this.queryExploreBooks("");
   };
 
   changeShelf = (id, newShelf) => {
@@ -326,7 +333,10 @@ class BooksApp extends React.Component {
 
   addNewBook = (newBook, newShelf) => {
     newBook.shelf = newShelf;
-    if (this.state.books.find((book) => book.id === newBook.id) !== -1 && newShelf!=='none') {
+    if (
+      this.state.books.find((book) => book.id === newBook.id) !== -1 &&
+      newShelf !== "none"
+    ) {
       this.setState((state) => ({
         books: state.books.concat(newBook),
       }));
@@ -365,7 +375,7 @@ class BooksApp extends React.Component {
                     value={query}
                     placeholder="Search by title or author"
                     onChange={(e) => {
-                      this.queryBooks(e.target.value);
+                      this.queryExploreBooks(e.target.value);
                     }}
                   />
                 </div>
