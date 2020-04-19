@@ -1,7 +1,7 @@
 import React from "react";
 import * as BooksAPI from "./BooksAPI";
 import "./App.css";
-import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Link} from "react-router-dom";
 import PropTypes from "prop-types";
 import Book from "./components/Book";
 import Shelf from "./components/Shelf";
@@ -28,9 +28,9 @@ function SearchResults(props) {
 }
 
 //About This Project View
-function About() {
-  return <></>;
-}
+// function About() {
+//   return <></>;
+// }
 
 class BooksApp extends React.Component {
   constructor(props) {
@@ -71,22 +71,17 @@ class BooksApp extends React.Component {
 
     if (query.length > 0) {
       BooksAPI.search(query).then((books) => {
-        console.log(books)
-        if(books!=null && books.hasOwnProperty('length'))
+        if (books != null && books.hasOwnProperty("length"))
           this.setState((state) => ({
-            exploreBooks: books.filter((obj) => obj.shelf !== "none"),
+            exploreBooks: books.filter(
+              (book) =>
+                !this.state.books.find((bookInShef) => {
+                  return book.id === bookInShef.id;
+                })
+            ),
           }));
-        
       });
     }
-
-   
-  };
-
-  queryShelfBooks = (query) => {
-    this.setState(() => ({
-      query: query.trim(),
-    }));
   };
 
   cleanQuery = () => {
@@ -110,18 +105,15 @@ class BooksApp extends React.Component {
 
   addNewBook = (newBook, newShelf) => {
     newBook.shelf = newShelf;
-    if (
-      this.state.books.find(
-        (book) => book.id === newBook.id && book.shelf !== newBook.shelf
-      ) !== -1
-    ) {
+
+    if (this.state.books.indexOf(newBook) === -1) {
       this.setState((state) => ({
         books: state.books.concat(newBook),
       }));
       BooksAPI.update(newBook.id, newShelf);
+    } else {
+      alert("Book Already In Shelf");
     }
-
-    console.log(this.state.books);
   };
 
   watchScroll = () => {
@@ -198,7 +190,7 @@ class BooksApp extends React.Component {
                         onClick={(e) => {
                           this.updateActivePage(1, e);
                         }}
-                        to="/"
+                        to="/wantToRead"
                       >
                         Want To Read
                       </Link>
@@ -211,7 +203,7 @@ class BooksApp extends React.Component {
                         onClick={(e) => {
                           this.updateActivePage(2, e);
                         }}
-                        to="/currentbooks"
+                        to="/currentlyReading"
                       >
                         Currently Reading
                       </Link>
@@ -235,39 +227,22 @@ class BooksApp extends React.Component {
                   </ol>
                 </div>
                 <div className="page-main-content">
-                  <Switch>
-                    <Route
-                      exact
-                      path="/"
-                      component={() => (
-                        <Shelf
-                          books={this.state.books}
-                          changeShelf={this.changeShelf}
-                          selectedShelf={"wantToRead"}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/currentbooks"
-                      component={() => (
-                        <Shelf
-                          books={this.state.books}
-                          changeShelf={this.changeShelf}
-                          selectedShelf={"currentlyReading"}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/read"
-                      component={() => (
-                        <Shelf
-                          books={this.state.books}
-                          changeShelf={this.changeShelf}
-                          selectedShelf={"read"}
-                        />
-                      )}
-                    />
-                  </Switch>
+                  <Shelf
+                    books={this.state.books}
+                    changeShelf={this.changeShelf}
+                    selectedShelf={"wantToRead"}
+                  />
+
+                  <Shelf
+                    books={this.state.books}
+                    changeShelf={this.changeShelf}
+                    selectedShelf={"currentlyReading"}
+                  />
+                  <Shelf
+                    books={this.state.books}
+                    changeShelf={this.changeShelf}
+                    selectedShelf={"read"}
+                  />
                 </div>
               </div>
             </div>
