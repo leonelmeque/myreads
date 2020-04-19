@@ -4,6 +4,52 @@ import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
 
+//Book List View
+function Book(props) {
+  const { book, changeShelf } = this.props; // Passing Props
+  return (
+    <>
+      <div className="book">
+        <div className="book-top">
+          <div
+            className="book-cover"
+            style={{
+              width: "100%",
+              height: 293,
+              backgroundRepeat: "non-repeat",
+              backgroundSize: "100% 100%",
+
+              backgroundImage: `url("${book.imageLinks.smallThumbnail}")`,
+            }}
+          />
+          <div className="book-shelf-changer">
+            <select
+              onChange={(e) => {
+                changeShelf(book.id, e.target.value);
+              }}
+            >
+              <option value="move" defaultValue>
+                Move to...
+              </option>
+              <option value="currentlyReading">Currently Reading</option>
+              <option value="wantToRead">Want to Read</option>
+              <option value="read">Read</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <h3>{book.title}</h3>
+          <div className="book-title">Year: {book.publishedDate}</div>
+
+          <div className="book-authors">Author: {book.authors}</div>
+          <div>{/*Please Add Stars*/}</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 //Want To Read View Component
 class WantToReadPage extends React.Component {
   render() {
@@ -267,6 +313,11 @@ function SearchResults(props) {
   }
 }
 
+//About This Project View
+function About() {
+  return <></>;
+}
+
 class BooksApp extends React.Component {
   constructor(props) {
     super(props);
@@ -276,7 +327,10 @@ class BooksApp extends React.Component {
       exploreBooks: [],
       activePage: 1,
       query: "",
+      navPosition: -1,
+      controlScroll: false,
     };
+    this.myRef = React.createRef();
   }
 
   componentDidMount() {
@@ -285,6 +339,8 @@ class BooksApp extends React.Component {
         books: books,
       });
     });
+
+    window.addEventListener("scroll", this.watchScroll, true);
   }
 
   updateActivePage = (page, event) => {
@@ -307,7 +363,7 @@ class BooksApp extends React.Component {
   };
 
   queryShelfBooks = (query) => {
-    this.setState((state) => ({
+    this.setState(() => ({
       query: query.trim(),
     }));
   };
@@ -346,6 +402,17 @@ class BooksApp extends React.Component {
     console.log(this.state.books);
   };
 
+  watchScroll = () => {
+    let value = window.scrollY;
+    const navElement = this.myRef.current;
+
+    if (value > 44) {
+      navElement.style.top = 0 + "px";
+    } else if (value < 23) {
+      navElement.style.top = 74 + "px";
+    }
+  };
+
   render() {
     let { query } = this.state;
 
@@ -357,7 +424,10 @@ class BooksApp extends React.Component {
               <div className="search-books-bar">
                 <button
                   className="close-search"
-                  onClick={() => this.setState({ showSearchPage: false })}
+                  onClick={() => {
+                    window.addEventListener("scroll", this.watchScroll, true);
+                    this.setState({ showSearchPage: false });
+                  }}
                 >
                   Close
                 </button>
@@ -392,12 +462,14 @@ class BooksApp extends React.Component {
               </div>
             </div>
           ) : (
-            <>
-              <div className="list-books-title">
+            <div>
+              <nav className="list-books-title">
                 <h1>MyReads</h1>
-              </div>
+                <Link to="/about">Home</Link>
+                <Link to="/about">About</Link>
+              </nav>
               <div className="page-container">
-                <div className="page-side-nav">
+                <div className="page-side-nav" ref={this.myRef}>
                   <ol>
                     <li>
                       {this.state.activePage === 1 && (
@@ -473,10 +545,15 @@ class BooksApp extends React.Component {
                   </Switch>
                 </div>
               </div>
-            </>
+            </div>
           )}
           <div className="open-search">
-            <button onClick={() => this.setState({ showSearchPage: true })}>
+            <button
+              onClick={() => {
+                window.removeEventListener("scroll", this.watchScroll, true);
+                this.setState({ showSearchPage: true });
+              }}
+            >
               Add a book
             </button>
             <span className="tooltip">Add New Book</span>

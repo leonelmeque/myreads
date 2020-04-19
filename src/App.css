@@ -2,6 +2,7 @@ html,
 body,
 .root {
   height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -14,43 +15,36 @@ body,
 }
 
 /* main page */
-
+s
 .page-container {
   position: relative;
 }
 
 .page-side-nav {
+  background-color: #dad617;
   position: fixed;
-  z-index: 0;
-  top: 0;
-  left: 0;
-  width: 350px;
-  height: 100%;
-  color: white;
-  overflow-x: hidden;
-  font-size: 18pt;
-  background-color: black;
-  overflow-y: hidden;
-  justify-content: center;
-  align-items: center;
-  display: flex;
+  width: 100%;
+  z-index: 1;
 }
 
 .page-side-nav ol {
   list-style: none;
   padding: 0;
+  text-align: center;
+  top:0px;
 }
 
 ol li {
-  display: flex;
+  display: inline-block;
   flex-direction: row;
   margin: 20px;
   align-items: center;
+  
 }
 
 li a {
   text-decoration: none;
-  color: white;
+  color: rgb(255, 255, 255);
   display: block;
   margin-left: 20px;
 }
@@ -78,10 +72,10 @@ li a {
 }
 
 .page-main-content {
-  margin-left: 350px;
   display: flex;
   flex-direction: column;
   padding: 50px;
+  margin-top: 80px;
 }
 
 .list-book-description {
@@ -102,16 +96,35 @@ li a {
 
 .list-books-title {
   position: relative;
-  padding: 10px 0;
-  background: #2e7c31;
-  text-align: center;
+  background: #ffffff;
+  display: flex;
+  padding: 20px 50px;
+  flex-direction: row;
+  color: black;
+  align-items: center;
   z-index: 2;
 }
 
 .list-books-title h1 {
-  font-weight: 400;
+  font-weight: bolder;
+  text-transform: uppercase;
+  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
-  color: white;
+  color: black;
+  flex-basis: 100%;
+}
+
+.list-books-title a {
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  color: black;
+  margin: 0px 20px;
+}
+
+.list-books-title a:hover{
+
+  color: rgb(239, 253, 44);
+  font-weight: 300;
 }
 
 .list-books-content {
@@ -191,7 +204,7 @@ button:hover ~ .tooltip {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 0 6px rgba(0, 0, 0, 0.23);
 }
 
-.search-container{
+.search-container {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
@@ -231,13 +244,12 @@ button:active {
 
 .search-books-results {
   padding: 80px 10px 20px;
-  display:grid;
+  display: grid;
   grid-template-columns: auto auto auto;
   justify-content: center;
   align-items: end;
   column-gap: 80px;
   row-gap: 50px;
-  
 }
 
 /* books grid */
