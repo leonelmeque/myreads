@@ -3,101 +3,8 @@ import * as BooksAPI from "./BooksAPI";
 import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
-
-function Stars(props) {
-  let count = parseInt(props.rating);
-  const stars = [];
-  while (count !== 0) {
-    stars.push(<div className="rating" />);
-    count--;
-  }
-
-  return <>{stars.map((obj) => obj)}</>;
-}
-
-//Book List View
-function Book(props) {
-  const { book, changeShelf } = props; // Passing Props
-
-  return (
-    <>
-      <div className="book">
-        <div className="book-top">
-          <div
-            className="book-cover"
-            style={{
-              width: "100%",
-              height: 293,
-              backgroundRepeat: "non-repeat",
-              backgroundSize: "100% 100%",
-
-              backgroundImage: `url("${
-                book.hasOwnProperty("imageLinks")
-                  ? book.imageLinks.thumbnail
-                  : ""
-              }")`,
-            }}
-          />
-          <div className="book-shelf-changer">
-            <select
-              onChange={(e) => {
-                changeShelf(book, e.target.value);
-              }}
-            >
-              <option value="move" defaultValue>
-                Move to...
-              </option>
-              <option value="currentlyReading">Currently Reading</option>
-              <option value="wantToRead">Want to Read</option>
-              <option value="read">Read</option>
-              <option value="none">None</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <h3
-            style={{ fontSize: `${book.title.length > 25 ? "9pt" : "1.17em"}` }}
-          >
-            {book.title}
-          </h3>
-          <div className="book-title">Year: {book.publishedDate}</div>
-
-          <div className="book-authors">Author: {book.authors}</div>
-          <div style={{display:'inline-flex'}}>
-            Rating: {book.hasOwnProperty("averageRating") ? <>{<Stars rating={book.averageRating}/>}</> : 'Not rated Yet' }
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// Shelf View Component
-class Shelf extends React.Component {
-  render() {
-    const { books, changeShelf, selectedShelf } = this.props; // Passing Props
-    console.log(selectedShelf);
-    return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          flexWrap: "wrap",
-          placeContent: "end space-between",
-          padding: "0px 30px",
-        }}
-      >
-        {books.map((book) => {
-          if (book.shelf !== selectedShelf) {
-            return null;
-          } else {
-            return <Book book={book} changeShelf={changeShelf} />;
-          }
-        })}
-      </div>
-    );
-  }
-}
+import Book from "./components/Book";
+import Shelf from "./components/Shelf";
 
 // Search View Component
 function SearchResults(props) {
@@ -158,15 +65,22 @@ class BooksApp extends React.Component {
   };
 
   queryExploreBooks = (query) => {
-    BooksAPI.search(query).then((books) => {
-      this.setState((state) => ({
-        exploreBooks: books,
-      }));
+    this.setState({
+      query: query.concat(),
     });
 
-    this.setState({
-      query: query.trim(),
-    });
+    if (query.length > 0) {
+      BooksAPI.search(query).then((books) => {
+        console.log(books)
+        if(books!=null && books.hasOwnProperty('length'))
+          this.setState((state) => ({
+            exploreBooks: books.filter((obj) => obj.shelf !== "none"),
+          }));
+        
+      });
+    }
+
+   
   };
 
   queryShelfBooks = (query) => {
