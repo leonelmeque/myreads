@@ -4,9 +4,21 @@ import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import PropTypes from "prop-types";
 
+function Stars(props) {
+  let count = parseInt(props.rating);
+  const stars = [];
+  while (count !== 0) {
+    stars.push(<div className="rating" />);
+    count--;
+  }
+
+  return <>{stars.map((obj) => obj)}</>;
+}
+
 //Book List View
 function Book(props) {
-  const { book, changeShelf } = this.props; // Passing Props
+  const { book, changeShelf } = props; // Passing Props
+
   return (
     <>
       <div className="book">
@@ -19,13 +31,17 @@ function Book(props) {
               backgroundRepeat: "non-repeat",
               backgroundSize: "100% 100%",
 
-              backgroundImage: `url("${book.imageLinks.smallThumbnail}")`,
+              backgroundImage: `url("${
+                book.hasOwnProperty("imageLinks")
+                  ? book.imageLinks.thumbnail
+                  : ""
+              }")`,
             }}
           />
           <div className="book-shelf-changer">
             <select
               onChange={(e) => {
-                changeShelf(book.id, e.target.value);
+                changeShelf(book, e.target.value);
               }}
             >
               <option value="move" defaultValue>
@@ -39,215 +55,43 @@ function Book(props) {
           </div>
         </div>
         <div>
-          <h3>{book.title}</h3>
+          <h3
+            style={{ fontSize: `${book.title.length > 25 ? "9pt" : "1.17em"}` }}
+          >
+            {book.title}
+          </h3>
           <div className="book-title">Year: {book.publishedDate}</div>
 
           <div className="book-authors">Author: {book.authors}</div>
-          <div>{/*Please Add Stars*/}</div>
+          <div style={{display:'inline-flex'}}>
+            Rating: {book.hasOwnProperty("averageRating") ? <>{<Stars rating={book.averageRating}/>}</> : 'Not rated Yet' }
+          </div>
         </div>
       </div>
     </>
   );
 }
 
-//Want To Read View Component
-class WantToReadPage extends React.Component {
+// Shelf View Component
+class Shelf extends React.Component {
   render() {
-    const { books, changeShelf } = this.props; // Passing Props
-    return (
-      <>
-        <>
-          {books.map((book) => {
-            if (book.shelf !== "wantToRead") {
-              return null;
-            } else {
-              return (
-                <div className="list-book-description" key={book.id}>
-                  <div className="book">
-                    <div className="book-top">
-                      <div
-                        className="book-cover"
-                        style={{
-                          width: "100%",
-                          height: 293,
-                          backgroundRepeat: "non-repeat",
-                          backgroundSize: "100% 100%",
-
-                          backgroundImage: `url("${
-                            book.imageLinks.smallThumbnail
-                          }")`,
-                        }}
-                      />
-                      <div className="book-shelf-changer">
-                        <select
-                          onChange={(e) => {
-                            changeShelf(book.id, e.target.value);
-                          }}
-                        >
-                          <option value="move" defaultValue>
-                            Move to...
-                          </option>
-                          <option value="currentlyReading">
-                            Currently Reading
-                          </option>
-                          <option value="wantToRead">Want to Read</option>
-                          <option value="read">Read</option>
-                          <option value="none">None</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h3>{book.title}</h3>
-                    <div className="book-title">Year: {book.publishedDate}</div>
-
-                    <div className="book-authors">Author: {book.authors}</div>
-                    <div className="text-box">
-                      <p>{book.description}</p>
-
-                      {book.hasOwnProperty("description") &&
-                      book.description.length < 550 ? (
-                        <></>
-                      ) : (
-                        <>
-                          <h4>No Description :-(</h4>
-                          <p className="read-more">
-                            {book.hasOwnProperty("description") && (
-                              <a href="/">See More</a>
-                            )}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-          })}
-        </>
-      </>
-    );
-  }
-}
-
-// Currently Reading View component
-class CurrentlyReading extends React.Component {
-  render() {
-    const { books, changeShelf } = this.props; // Passing Props
-    return (
-      <>
-        {books.map((book) => {
-          if (book.shelf !== "currentlyReading") {
-            return null;
-          } else {
-            return (
-              <div key={book.id}>
-                <h3>{book.title}</h3>
-                <div className="book">
-                  <div className="book-top">
-                    <div
-                      className="book-cover"
-                      style={{
-                        width: "100%",
-                        height: 293,
-                        backgroundRepeat: "non-repeat",
-                        backgroundSize: "100% 100%",
-
-                        backgroundImage: `url("${
-                          book.imageLinks.smallThumbnail
-                        }")`,
-                      }}
-                    />
-                    <div className="book-shelf-changer">
-                      <select
-                        onChange={(e) => {
-                          changeShelf(book.id, e.target.value);
-                        }}
-                      >
-                        <option value="move" defaultValue>
-                          Move to...
-                        </option>
-                        <option value="currentlyReading">
-                          Currently Reading
-                        </option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-        })}
-      </>
-    );
-  }
-}
-// Read View Component
-class Read extends React.Component {
-  render() {
-    const { books, changeShelf } = this.props; // Passing Props
+    const { books, changeShelf, selectedShelf } = this.props; // Passing Props
+    console.log(selectedShelf);
     return (
       <div
         style={{
           display: "flex",
           flexDirection: "row",
           flexWrap: "wrap",
-          placeContent: "end",
+          placeContent: "end space-between",
+          padding: "0px 30px",
         }}
       >
         {books.map((book) => {
-          if (book.shelf !== "read") {
+          if (book.shelf !== selectedShelf) {
             return null;
           } else {
-            return (
-              <div
-                key={book.id}
-                style={{
-                  alignSelf: "flex-end",
-                  flexBasis: "content",
-                  margin: "0px 50px",
-                }}
-              >
-                <h3 style={{ width: 240 }}>{book.title}</h3>
-                <div className="book">
-                  <div className="book-top">
-                    <div
-                      className="book-cover"
-                      style={{
-                        width: "100%",
-                        height: 293,
-                        backgroundRepeat: "non-repeat",
-                        backgroundSize: "100% 100%",
-
-                        backgroundImage: `url("${
-                          book.imageLinks.smallThumbnail
-                        }")`,
-                      }}
-                    />
-                    <div className="book-shelf-changer">
-                      <select
-                        onChange={(e) => {
-                          changeShelf(book.id, e.target.value);
-                        }}
-                      >
-                        <option value="move" defaultValue>
-                          Move to...
-                        </option>
-                        <option value="currentlyReading">
-                          Currently Reading
-                        </option>
-                        <option value="wantToRead">Want to Read</option>
-                        <option value="read">Read</option>
-                        <option value="none">None</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
+            return <Book book={book} changeShelf={changeShelf} />;
           }
         })}
       </div>
@@ -256,7 +100,6 @@ class Read extends React.Component {
 }
 
 // Search View Component
-
 function SearchResults(props) {
   let { books, addNewBook } = props;
 
@@ -268,43 +111,7 @@ function SearchResults(props) {
         {books.map((book) => {
           return (
             <div key={book.id}>
-              <div className="book">
-                <h3>{book.title}</h3>
-                <div className="book-top">
-                  <div
-                    className="book-cover"
-                    style={{
-                      width: "100%",
-                      height: 293,
-                      backgroundRepeat: "non-repeat",
-                      backgroundSize: "100% 100%",
-
-                      backgroundImage: `url("${
-                        book.hasOwnProperty("imageLinks")
-                          ? book.imageLinks.smallThumbnail
-                          : ""
-                      }")`,
-                    }}
-                  />
-                  <div className="book-shelf-changer">
-                    <select
-                      onChange={(e) => {
-                        addNewBook(book, e.target.value);
-                      }}
-                    >
-                      <option value="move" defaultValue>
-                        Move to...
-                      </option>
-                      <option value="currentlyReading">
-                        Currently Reading
-                      </option>
-                      <option value="wantToRead">Want to Read</option>
-                      <option value="read">Read</option>
-                      <option value="none">None</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              <Book book={book} changeShelf={addNewBook} />
             </div>
           );
         })}
@@ -372,14 +179,14 @@ class BooksApp extends React.Component {
     this.queryExploreBooks("");
   };
 
-  changeShelf = (id, newShelf) => {
+  changeShelf = (receivedBook, newShelf) => {
     if (newShelf === "move") alert("Select a Shelf");
     else
       this.setState((state) => ({
         books: state.books.map((book) => {
-          if (book.id === id) {
+          if (book.id === receivedBook.id) {
             book.shelf = newShelf;
-            BooksAPI.update(id, newShelf);
+            BooksAPI.update(receivedBook.id, newShelf);
             return book;
           }
           return book;
@@ -390,8 +197,9 @@ class BooksApp extends React.Component {
   addNewBook = (newBook, newShelf) => {
     newBook.shelf = newShelf;
     if (
-      this.state.books.find((book) => book.id === newBook.id) !== -1 &&
-      newShelf !== "none"
+      this.state.books.find(
+        (book) => book.id === newBook.id && book.shelf !== newBook.shelf
+      ) !== -1
     ) {
       this.setState((state) => ({
         books: state.books.concat(newBook),
@@ -409,7 +217,7 @@ class BooksApp extends React.Component {
     if (value > 44) {
       navElement.style.top = 0 + "px";
     } else if (value < 23) {
-      navElement.style.top = 74 + "px";
+      navElement.style.top = 75 + "px";
     }
   };
 
@@ -465,16 +273,13 @@ class BooksApp extends React.Component {
             <div>
               <nav className="list-books-title">
                 <h1>MyReads</h1>
-                <Link to="/about">Home</Link>
+                <Link to="/">Home</Link>
                 <Link to="/about">About</Link>
               </nav>
               <div className="page-container">
                 <div className="page-side-nav" ref={this.myRef}>
                   <ol>
                     <li>
-                      {this.state.activePage === 1 && (
-                        <div className="link-circle"> </div>
-                      )}{" "}
                       <Link
                         onClick={(e) => {
                           this.updateActivePage(1, e);
@@ -483,11 +288,11 @@ class BooksApp extends React.Component {
                       >
                         Want To Read
                       </Link>
+                      {this.state.activePage === 1 && (
+                        <div className="link-circle"> </div>
+                      )}{" "}
                     </li>
                     <li>
-                      {this.state.activePage === 2 && (
-                        <div className="link-circle"> </div>
-                      )}
                       <Link
                         onClick={(e) => {
                           this.updateActivePage(2, e);
@@ -496,11 +301,11 @@ class BooksApp extends React.Component {
                       >
                         Currently Reading
                       </Link>
+                      {this.state.activePage === 2 && (
+                        <div className="link-circle"> </div>
+                      )}{" "}
                     </li>
                     <li>
-                      {this.state.activePage === 3 && (
-                        <div className="link-circle"> </div>
-                      )}
                       <Link
                         onClick={(e) => {
                           this.updateActivePage(3, e);
@@ -509,6 +314,9 @@ class BooksApp extends React.Component {
                       >
                         Read
                       </Link>
+                      {this.state.activePage === 3 && (
+                        <div className="link-circle"> </div>
+                      )}{" "}
                     </li>
                   </ol>
                 </div>
@@ -518,27 +326,30 @@ class BooksApp extends React.Component {
                       exact
                       path="/"
                       component={() => (
-                        <WantToReadPage
+                        <Shelf
                           books={this.state.books}
                           changeShelf={this.changeShelf}
+                          selectedShelf={"wantToRead"}
                         />
                       )}
                     />
                     <Route
                       path="/currentbooks"
                       component={() => (
-                        <CurrentlyReading
+                        <Shelf
                           books={this.state.books}
                           changeShelf={this.changeShelf}
+                          selectedShelf={"currentlyReading"}
                         />
                       )}
                     />
                     <Route
                       path="/read"
                       component={() => (
-                        <Read
+                        <Shelf
                           books={this.state.books}
                           changeShelf={this.changeShelf}
+                          selectedShelf={"read"}
                         />
                       )}
                     />
