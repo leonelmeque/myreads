@@ -1,9 +1,9 @@
 import React from "react";
 import Book from "./Book";
 // Shelf View Component
-export default class Shelf extends React.Component {
-  render() {
-    const { books, changeShelf, selectedShelf } = this.props; // Passing Props
+export default function Shelf(props){
+  
+    const { books, changeShelf, selectedShelf } = props; // Passing Props
     const header = () => {
       switch (selectedShelf) {
         case "wantToRead":
@@ -49,4 +49,4 @@ export default class Shelf extends React.Component {
       );
     }
   }
-}
+

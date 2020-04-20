@@ -1,7 +1,7 @@
 import React from "react";
 import * as BooksAPI from "./BooksAPI";
 import "./App.css";
-import { BrowserRouter as Router, Link} from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import Book from "./components/Book";
 import Shelf from "./components/Shelf";
@@ -23,6 +23,101 @@ function SearchResults(props) {
           );
         })}
       </>
+    );
+  }
+}
+
+class SearchView extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      exploreBooks: [],
+      query: "",
+    };
+  }
+
+  queryExploreBooks = (query) => {
+    this.setState({
+      query: query.concat(),
+    });
+
+    if (this.state.query.length > 0) {
+      BooksAPI.search(query).then((books) => {
+        if (books != null && books.hasOwnProperty("length")) {
+          //Adding all search results books to none
+          books.forEach((element) => {
+            element.shelf = "none";
+          });
+          //adding books to state
+          this.setState(() => ({
+            exploreBooks: books.filter(
+              (book) =>
+                !this.props.books.find((bookInShef) => {
+                  return book.id === bookInShef.id;
+                })
+            ),
+          }));
+          //Adding all books to the explore page
+          this.setState((currentState) => ({
+            exploreBooks: currentState.exploreBooks.concat(this.props.books),
+          }));
+        } else {
+          this.setState({
+            exploreBooks: [],
+          });
+        }
+      });
+    }
+  };
+
+  cleanQuery = () => {
+    this.queryExploreBooks("");
+  };
+
+  render() {
+    return (
+      <div className="search-books">
+        <div className="search-books-bar">
+          <Link
+            to="/"
+            className="close-search"
+            onClick={() => {
+              this.cleanQuery();
+              window.addEventListener("scroll", this.props.watchScroll, true);
+            }}
+          >
+            Close
+          </Link>
+          <div className="search-books-input-wrapper">
+            {/*
+          NOTES: The search from BooksAPI is limited to a particular set of search terms.
+          You can find these search terms here:
+          https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
+
+          However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
+          you don't find a specific author or title. Every search is limited by search terms.
+        */}
+            <input
+              type="text"
+              value={this.state.query}
+              placeholder="Search by title or author"
+              onChange={(e) => {
+                this.queryExploreBooks(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+        <div className="search-books-results">
+          {this.state.query !== "" && (
+            <SearchResults
+              style={{ margin: "0px 20px 20px 0px" }}
+              books={this.state.exploreBooks}
+              addNewBook={this.props.addNewBook}
+            />
+          )}
+          <ol className="books-grid" />
+        </div>
+      </div>
     );
   }
 }
@@ -71,8 +166,13 @@ class BooksApp extends React.Component {
 
     if (query.length > 0) {
       BooksAPI.search(query).then((books) => {
-        if (books != null && books.hasOwnProperty("length"))
-          this.setState((state) => ({
+        if (books != null && books.hasOwnProperty("length")) {
+          //Adding all search results books to none
+          books.forEach((element) => {
+            element.shelf = "none";
+          });
+          //adding books to state
+          this.setState(() => ({
             exploreBooks: books.filter(
               (book) =>
                 !this.state.books.find((bookInShef) => {
@@ -80,12 +180,17 @@ class BooksApp extends React.Component {
                 })
             ),
           }));
+          //Adding all books to the explore page
+          this.setState((currentState) => ({
+            exploreBooks: currentState.exploreBooks.concat(this.state.books),
+          }));
+        } else {
+          this.setState({
+            exploreBooks: [],
+          });
+        }
       });
     }
-  };
-
-  cleanQuery = () => {
-    this.queryExploreBooks("");
   };
 
   changeShelf = (receivedBook, newShelf) => {
@@ -128,55 +233,11 @@ class BooksApp extends React.Component {
   };
 
   render() {
-    let { query } = this.state;
-
     return (
       <Router>
         <div className="app">
-          {this.state.showSearchPage ? (
-            <div className="search-books">
-              <div className="search-books-bar">
-                <button
-                  className="close-search"
-                  onClick={() => {
-                    window.addEventListener("scroll", this.watchScroll, true);
-                    this.setState({ showSearchPage: false });
-                  }}
-                >
-                  Close
-                </button>
-                <div className="search-books-input-wrapper">
-                  {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                  <input
-                    type="text"
-                    value={query}
-                    placeholder="Search by title or author"
-                    onChange={(e) => {
-                      this.queryExploreBooks(e.target.value);
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="search-books-results">
-                {query !== "" && (
-                  <SearchResults
-                    style={{ margin: "0px 20px 20px 0px" }}
-                    books={this.state.exploreBooks}
-                    addNewBook={this.addNewBook}
-                  />
-                )}
-                <ol className="books-grid" />
-              </div>
-            </div>
-          ) : (
-            <div>
+          <Switch>
+            <Route exact path="/">
               <nav className="list-books-title">
                 <h1>MyReads</h1>
                 <Link to="/">Home</Link>
@@ -245,17 +306,27 @@ class BooksApp extends React.Component {
                   />
                 </div>
               </div>
-            </div>
-          )}
+            </Route>
+            <Route
+              path="/search"
+              component={() => (
+                <SearchView
+                  addNewBook={this.addNewBook}
+                  books={this.state.books}
+                  watchScroll={this.watchScroll}
+                />
+              )}
+            />
+          </Switch>
           <div className="open-search">
-            <button
+            <Link
+              to="/search"
               onClick={() => {
                 window.removeEventListener("scroll", this.watchScroll, true);
-                this.setState({ showSearchPage: true });
               }}
             >
               Add a book
-            </button>
+            </Link>
             <span className="tooltip">Add New Book</span>
           </div>
         </div>
